@@ -1,6 +1,7 @@
 package com.atin.hafalan
 
 import android.content.Context
+import android.content.Intent
 import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
@@ -67,15 +68,17 @@ class SuratAdapter(val context: Context, val list: List<SuratContract>)
 
                     }
 
-                    override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
-                    ) {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         if (response.isSuccessful) {
                             Log.e("download", "server contacted and has file")
                             val writtenToDisk: Boolean = writeResponseBodyToDisk(response.body()!!, "${no} - ${nama}.mp3")
                             Log.e("download", "file download was a success? $writtenToDisk")
-//                            if (writtenToDisk)
+                            if (writtenToDisk) { //update adapter
+                                val intent = Intent()
+                                intent.action = "com.atin.hafalan"
+                                intent.putExtra("MyData", 1000)
+                                sendBroadcast(intent)﻿
+                            }
                         } else {
                             Log.e("download", "server contact failed")
                         }
