@@ -12,7 +12,8 @@ data class SuratContract(
     val nama: String,
     val arti: String,
     val ayat: String?,
-    val play: Boolean
+    val play: Boolean,
+    val download: Boolean
 ) : Parcelable {
     companion object{
         const val TABLE_SURAT = "table_surat"
@@ -22,5 +23,6 @@ data class SuratContract(
         const val ARTI = "arti"
         const val AYAT = "ayat"
         const val PLAY = "play"
+        const val DOWNLOAD = "download"
     }
 }

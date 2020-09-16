@@ -29,7 +29,8 @@ class MyDatabaseHelper(context: Context) : ManagedSQLiteOpenHelper(context, "dat
             SuratContract.NAMA to TEXT,
             SuratContract.AYAT to TEXT,
             SuratContract.ARTI to TEXT,
-            SuratContract.PLAY to BLOB
+            SuratContract.PLAY to BLOB,
+            SuratContract.DOWNLOAD to BLOB
         )
     }
 

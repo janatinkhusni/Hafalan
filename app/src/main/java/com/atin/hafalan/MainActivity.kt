@@ -2,8 +2,14 @@ package com.atin.hafalan
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -20,52 +26,67 @@ class MainActivity : AppCompatActivity() {
 
     var adapter: SuratAdapter? = null
     private val RECORD_REQUEST_CODE = 101
+    private lateinit var mediaPlayer: MediaPlayer
+    private var pause:Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        setSupportActionBar(toolbar)
         setupPermissions()
-
-        Log.e("Response",""+getListSurat().size)
 
         if (getListSurat().size != 114){
             NetworkConfig().getService()
                 .getSurat()
                 .enqueue(object : Callback<Surats> {
                     override fun onFailure(call: Call<Surats>, t: Throwable) {
-                        Toast.makeText(this@MainActivity, t.localizedMessage, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, t.localizedMessage, Toast.LENGTH_SHORT)
+                            .show()
                     }
 
                     override fun onResponse(call: Call<Surats>, response: Response<Surats>) {
                         dropTableSurat()
-                        for (i in 0 until response.body()?.hasil?.size!!){
+                        for (i in 0 until response.body()?.hasil?.size!!) {
                             val surat = response.body()!!.hasil.get(i)
-                            Log.e("Surat",""+surat.nomor+surat.nama+surat.ayat+surat.arti)
-                            insertSurat(surat.nomor, surat.nama, surat.ayat, surat.arti, false)
+                            Log.e("Surat", "" + surat.nomor + surat.nama + surat.ayat + surat.arti)
+                            insertSurat(surat.nomor, surat.nama, surat.ayat, surat.arti)
                         }
-                        Log.e("Response",""+getListSurat().size)
                         toast("Berhasil menambahkan surat")
+                        loadList()
                     }
                 })
         } else {
-            val list = getListSurat()
-            val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            adapter = SuratAdapter(this, list)
-            rv_surat.layoutManager = layoutManager
-            rv_surat.adapter = adapter
+            loadList()
+        }
+
+        btnPlay.setOnClickListener {
+            if(pause){
+                mediaPlayer.seekTo(mediaPlayer.currentPosition)
+                mediaPlayer.start()
+                pause = false
+            }else{
+                mediaPlayer = MediaPlayer.create(this, Uri.parse("${Environment.getExternalStorageDirectory()}/Hafalan/114 - An Naas.mp3"));
+                mediaPlayer.start()
+            }
+
+            btnPlay.visibility = View.GONE
+            btnPause.visibility = View.VISIBLE
+
+            mediaPlayer.setOnCompletionListener {
+                btnPlay.visibility = View.VISIBLE
+                btnPause.visibility = View.GONE
+                Toast.makeText(this,"end",Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnPause.setOnClickListener {
+            pause = true
+            mediaPlayer.pause()
+            btnPlay.visibility = View.VISIBLE
+            btnPause.visibility = View.GONE
         }
     }
 
-    private fun getListSurat(): List<SuratContract> {
-        var listData: List<SuratContract>? = null
-        database.use {
-            val result = select(SuratContract.TABLE_SURAT)
-            listData = result.parseList(classParser<SuratContract>())
-        }
-        return listData!!
-    }
-    
     private fun dropTableSurat(){
         database.use {
             dropTable(SuratContract.TABLE_SURAT)
@@ -80,37 +101,59 @@ class MainActivity : AppCompatActivity() {
                 SuratContract.NAMA to TEXT,
                 SuratContract.AYAT to TEXT,
                 SuratContract.ARTI to TEXT,
-                SuratContract.PLAY to BLOB
+                SuratContract.PLAY to BLOB,
+                SuratContract.DOWNLOAD to BLOB
             )
         }
     }
 
-    private fun insertSurat(no: String?, nama: String, ayat: String, arti: String, play: Boolean) {
+    private fun insertSurat(no: String, nama: String, ayat: String, arti: String) {
         database.use {
-            insert(SuratContract.TABLE_SURAT,
+            insert(
+                SuratContract.TABLE_SURAT,
                 SuratContract.NO to no,
                 SuratContract.NAMA to nama,
                 SuratContract.AYAT to ayat,
                 SuratContract.ARTI to arti,
-                SuratContract.PLAY to false
+                SuratContract.PLAY to false,
+                SuratContract.DOWNLOAD to false
             )
         }
     }
 
-    fun toast(txt: String){
-        Toast.makeText(this,txt,Toast.LENGTH_SHORT).show()
+    private fun updatePlay(play: Boolean) {
+        database.use {
+            update(SuratContract.TABLE_SURAT, SuratContract.PLAY to play)
+                .where(
+                    "${SuratContract.PLAY} = {${SuratContract.PLAY}}",
+                    SuratContract.PLAY to !play
+                )
+                .exec()
+        }
+        adapter?.updateList()
     }
 
-    fun update(){
-        val listRefresh = getListSurat()
-        adapter = SuratAdapter(this, listRefresh)
-        adapter?.notifyDataSetChanged()
-        rv_surat.adapter = adapter
+    private fun updateDownload() {
+        database.use {
+            update(SuratContract.TABLE_SURAT, SuratContract.DOWNLOAD to true)
+                .where(
+                    "${SuratContract.DOWNLOAD} = {${SuratContract.DOWNLOAD}}",
+                    SuratContract.DOWNLOAD to false
+                )
+                .exec()
+        }
+        adapter?.updateList()
+    }
+
+    fun toast(txt: String){
+        Toast.makeText(this, txt, Toast.LENGTH_SHORT).show()
     }
 
     private fun setupPermissions() {
-        val permission = ContextCompat.checkSelfPermission(this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val permission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
             Log.i("permission", "Permission to record denied")
@@ -119,8 +162,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun makeRequest() {
-        ActivityCompat.requestPermissions(this,
+        ActivityCompat.requestPermissions(
+            this,
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            RECORD_REQUEST_CODE)
+            RECORD_REQUEST_CODE
+        )
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here.
+        val id = item.getItemId()
+
+        if (id == R.id.action_download) {
+            updateDownload()
+            return true
+        } else if (id == R.id.action_check) {
+            updatePlay(true)
+            return true
+        } else if (id == R.id.action_uncheck) {
+            updatePlay(false)
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun loadList(){
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        adapter = SuratAdapter(this)
+        rv_surat.layoutManager = layoutManager
+        rv_surat.adapter = adapter
+    }
+
+    fun getListSurat(): List<SuratContract> {
+        var listData: List<SuratContract>? = null
+        database.use {
+            val result = select(SuratContract.TABLE_SURAT)
+            listData = result.parseList(classParser())
+        }
+        return listData!!
     }
 }

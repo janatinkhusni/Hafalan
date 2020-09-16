@@ -8,10 +8,12 @@
     android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
-        app:title="HAFALAN" />
+        app:title="HAFALAN"
+        app:titleTextColor="@color/colorPrimaryDark2"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_surat"
@@ -26,11 +28,6 @@
         android:orientation="horizontal"
         android:padding="13dp"
         android:gravity="center">
-
-        <CheckBox
-            android:id="@+id/checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
         <LinearLayout
             android:layout_width="0dp"

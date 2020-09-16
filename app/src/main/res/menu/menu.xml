@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_download"
+        android:title="Unduh yang belum diunduh"
+        android:visible="false"/>
+
+    <item
+        android:id="@+id/action_check"
+        android:title="Pilih semua"/>
+
+    <item
+        android:id="@+id/action_uncheck"
+        android:title="Hapus Semua Pilihan"/>
+</menu>

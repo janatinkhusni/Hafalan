@@ -9,10 +9,10 @@ class RetrofitBuilder {
     companion object {
         fun getClient(): Retrofit {
             return Retrofit.Builder()
-                    .baseUrl("https://api.banghasan.com/quran/format/json/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build()
+                .baseUrl("https://api.banghasan.com/quran/format/json/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build()
         }
     }
 }

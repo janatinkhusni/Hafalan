@@ -6,7 +6,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Surat(
-        @SerializedName("nomor") var nomor: String?,
+        @SerializedName("nomor") var nomor: String,
         @SerializedName("nama") var nama: String,
         @SerializedName("ayat") var ayat: String,
         @SerializedName("arti") var arti: String
