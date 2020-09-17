@@ -28,12 +28,15 @@ class MainActivity : AppCompatActivity() {
     private val RECORD_REQUEST_CODE = 101
     private lateinit var mediaPlayer: MediaPlayer
     private var pause:Boolean = false
+    val path = "${Environment.getExternalStorageDirectory()}/Hafalan/"
+    var sessionManager: SessionManager = TODO()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupPermissions()
+        sessionManager = SessionManager(this)
 
         if (getListSurat().size != 114){
             NetworkConfig().getService()
@@ -60,22 +63,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnPlay.setOnClickListener {
+            btnPlay.visibility = View.GONE
+            btnPause.visibility = View.VISIBLE
+
             if(pause){
                 mediaPlayer.seekTo(mediaPlayer.currentPosition)
                 mediaPlayer.start()
                 pause = false
             }else{
-                mediaPlayer = MediaPlayer.create(this, Uri.parse("${Environment.getExternalStorageDirectory()}/Hafalan/114 - An Naas.mp3"));
-                mediaPlayer.start()
-            }
-
-            btnPlay.visibility = View.GONE
-            btnPause.visibility = View.VISIBLE
-
-            mediaPlayer.setOnCompletionListener {
-                btnPlay.visibility = View.VISIBLE
-                btnPause.visibility = View.GONE
-                Toast.makeText(this,"end",Toast.LENGTH_SHORT).show()
+                playSurat()
             }
         }
 
@@ -84,6 +80,28 @@ class MainActivity : AppCompatActivity() {
             mediaPlayer.pause()
             btnPlay.visibility = View.VISIBLE
             btnPause.visibility = View.GONE
+        }
+
+        btnStop.setOnClickListener {
+            pause = false
+            mediaPlayer.stop()
+            btnPlay.visibility = View.VISIBLE
+            btnPause.visibility = View.GONE
+        }
+
+        btnNext.setOnClickListener {
+            sessionManager.suratKe++
+            playSurat()
+        }
+
+        btnPrevious.setOnClickListener {
+            sessionManager.suratKe--
+            playSurat()
+        }
+
+        mediaPlayer.setOnCompletionListener {
+            sessionManager.suratKe++
+            playSurat()
         }
     }
 
@@ -207,5 +225,21 @@ class MainActivity : AppCompatActivity() {
             listData = result.parseList(classParser())
         }
         return listData!!
+    }
+
+    fun playSurat(){
+        val listSurat = getListSurat()
+        for (q in sessionManager.suratKe until listSurat.size){
+            val surat = listSurat.get(q)
+            if (surat.play){
+                val nomor = String.format("%03d", surat.no)
+                mediaPlayer = MediaPlayer.create(this, Uri.parse("${path}${nomor} - ${surat.nama}.mp3"));
+                mediaPlayer.start()
+                break
+            }
+        }
+
+        sessionManager.suratKe = 0
+        playSurat()
     }
 }

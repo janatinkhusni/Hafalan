@@ -29,6 +29,19 @@
         android:padding="13dp"
         android:gravity="center">
 
+        <ImageView
+            android:id="@+id/btnPlay"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/play"/>
+
+        <ImageView
+            android:id="@+id/btnPause"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/pause"
+            android:visibility="gone"/>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -62,17 +75,11 @@
             android:rotation="180"/>
 
         <ImageView
-            android:id="@+id/btnPlay"
+            android:id="@+id/btnStop"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/play_button"/>
-
-        <ImageView
-            android:id="@+id/btnPause"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/pause"
-            android:visibility="gone"/>
+            android:src="@drawable/stop_button"
+            android:rotation="180"/>
 
         <ImageView
             android:id="@+id/btnNext"

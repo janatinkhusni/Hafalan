@@ -21,6 +21,7 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
 
     lateinit var itemview: View
     var list = getListSurat()
+    val path = "${Environment.getExternalStorageDirectory()}/Hafalan"
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): Holder {
         itemview = LayoutInflater.from(context).inflate(R.layout.item_surat, p0, false)
@@ -34,46 +35,31 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val view = holder.view
         val surat = list[position]
-        val sd_main = File("${Environment.getExternalStorageDirectory()}/Hafalan")
-        if (!sd_main.exists()) //cek folder
-            sd_main.mkdir() //buat folder
-
-        val sd = File(sd_main,"${surat.no} - ${surat.nama}.mp3")
-        view.checkbox.isEnabled = sd.exists()
 
         view.btnLoading.visibility = View.GONE
-        if (sd.exists()) { //jika file ada
-            view.btnDownload.visibility = View.GONE
-            view.btnPlay.visibility = View.VISIBLE
-            Log.e("surat.play", "" + surat.play)
-            view.checkbox.isChecked = surat.play
-        }else{//tidak ada file
-            view.btnDownload.visibility = View.VISIBLE
-            view.btnPlay.visibility = View.GONE
-            view.checkbox.isChecked = false
-        }
-
         view.tvName.text = "${surat.no} - ${surat.nama}"
         view.tvDetail.text = "${surat.ayat} - ${surat.arti}"
 
         view.btnDownload.setOnClickListener {
             view.btnDownload.visibility = View.GONE
             view.btnLoading.visibility = View.VISIBLE
-            download(surat.no, surat.nama)
+            download(surat.no, surat.nama, view, surat)
         }
 
-        if (surat.download){
-            if (!sd.exists()){
-                view.btnDownload.visibility = View.GONE
-                view.btnLoading.visibility = View.VISIBLE
-                download(surat.no, surat.nama)
-            }
-        }
+//        if (surat.download){
+//            if (!sd.exists()){
+//                view.btnDownload.visibility = View.GONE
+//                view.btnLoading.visibility = View.VISIBLE
+//                download(surat.no, surat.nama)
+//            }
+//        }
+
+        loadStatus(view, surat)
     }
 
     class Holder(val view: View) : RecyclerView.ViewHolder(view)
 
-    fun download(no: String, nama: String) {
+    fun download(no: String, nama: String, view: View, surat: SuratContract) {
         val nomor = String.format("%03d", no.toInt())
         Log.e("nomor", "" + nomor)
         ApiMain().services.downloadFile("mishary-rashid-alafasy-${nomor}-muslimcentral.com.mp3")
@@ -87,11 +73,13 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
                         Log.e("download", "server contacted and has file")
                         val writtenToDisk: Boolean = writeResponseBodyToDisk(response.body()!!, "${no} - ${nama}.mp3")
                         Log.e("download", "file download was a success? $writtenToDisk")
-                        if (writtenToDisk) updateDownload(no)
+                        if (writtenToDisk) {
+                            loadStatus(view, surat)
+                            updateDownload(no)
+                        }
                     } else {
                         Log.e("download", "server contact failed")
                     }
-                    notifyDataSetChanged()
                 }
             })
     }
@@ -157,5 +145,24 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
             listData = result.parseList(classParser())
         }
         return listData!!
+    }
+
+    fun loadStatus(view: View, surat: SuratContract){ //download atau sedang progress
+        val sd_main = File(path)
+        if (!sd_main.exists()) //cek folder
+            sd_main.mkdir() //buat folder
+        val sd = File(sd_main,"${surat.no} - ${surat.nama}.mp3")
+
+        view.checkbox.isEnabled = sd.exists()
+        Log.e("cek_file", ""+sd.exists())
+
+        if (sd.exists()) { //jika file ada
+            view.btnDownload.visibility = View.GONE
+            view.btnLoading.visibility = View.GONE
+            view.checkbox.isChecked = surat.play
+        }else{//tidak ada file
+            view.btnDownload.visibility = View.VISIBLE
+            view.checkbox.isChecked = false
+        }
     }
 }
