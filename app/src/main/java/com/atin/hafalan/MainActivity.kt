@@ -29,14 +29,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaPlayer: MediaPlayer
     private var pause:Boolean = false
     val path = "${Environment.getExternalStorageDirectory()}/Hafalan/"
-    var sessionManager: SessionManager = TODO()
+//    var sessionManager = SessionManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupPermissions()
-        sessionManager = SessionManager(this)
+//        sessionManager = SessionManager(this)
 
         if (getListSurat().size != 114){
             NetworkConfig().getService()
@@ -90,19 +90,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnNext.setOnClickListener {
-            sessionManager.suratKe++
+//            sessionManager.suratKe++
+            SessionManager(this).suratKe++
             playSurat()
         }
 
         btnPrevious.setOnClickListener {
-            sessionManager.suratKe--
+//            sessionManager.suratKe--
+            SessionManager(this).suratKe--
             playSurat()
         }
 
-        mediaPlayer.setOnCompletionListener {
-            sessionManager.suratKe++
-            playSurat()
-        }
+//        mediaPlayer.setOnCompletionListener {
+////            sessionManager.suratKe++
+//            SessionManager(this).suratKe++
+//            playSurat()
+//        }
     }
 
     private fun dropTableSurat(){
@@ -229,7 +232,8 @@ class MainActivity : AppCompatActivity() {
 
     fun playSurat(){
         val listSurat = getListSurat()
-        for (q in sessionManager.suratKe until listSurat.size){
+//        for (q in sessionManager.suratKe until listSurat.size){
+        for (q in  SessionManager(this).suratKe until listSurat.size){
             val surat = listSurat.get(q)
             if (surat.play){
                 val nomor = String.format("%03d", surat.no)
@@ -239,7 +243,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        sessionManager.suratKe = 0
+        SessionManager(this).suratKe == 0
+//        sessionManager.suratKe = 0
         playSurat()
     }
 }
