@@ -10,8 +10,9 @@ data class SuratContract(
     val id: Long?,
     val no: String,
     val nama: String,
-    val arti: String,
+    val asma: String,
     val ayat: String?,
+    val arti: String,
     val play: Boolean,
     val download: Boolean
 ) : Parcelable {
@@ -20,8 +21,9 @@ data class SuratContract(
         const val ID = "id"
         const val NO = "no"
         const val NAMA = "nama"
-        const val ARTI = "arti"
+        const val ASMA = "asma"
         const val AYAT = "ayat"
+        const val ARTI = "arti"
         const val PLAY = "play"
         const val DOWNLOAD = "download"
     }

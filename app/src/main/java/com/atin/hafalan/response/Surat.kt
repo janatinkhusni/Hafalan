@@ -8,6 +8,7 @@ import kotlinx.android.parcel.Parcelize
 data class Surat(
         @SerializedName("nomor") var nomor: String,
         @SerializedName("nama") var nama: String,
+        @SerializedName("asma") var asma: String,
         @SerializedName("ayat") var ayat: String,
         @SerializedName("arti") var arti: String
 ) : Parcelable

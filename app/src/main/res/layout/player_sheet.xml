@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white"
+    app:behavior_hideable="false"
+    app:behavior_peekHeight="72dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+    android:id="@+id/bottom_sheet"
+    android:gravity="center">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/grey2"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="2dp"
+            android:background="@drawable/limit"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:singleLine="true"
+                    android:text="Download surat lalu pilih surat yang akan diputar"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimaryDark" />
+
+                <TextView
+                    android:id="@+id/tvDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Tekan tombol play"/>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btnPlay_"
+                android:layout_width="47dp"
+                android:layout_height="47dp"
+                android:layout_gravity="bottom|end"
+                android:src="@drawable/play"
+                android:paddingBottom="6dp"/>
+
+            <ImageView
+                android:id="@+id/btnPause_"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_gravity="bottom|end"
+                android:src="@drawable/pause"
+                android:paddingBottom="7dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@color/grey"
+            android:layout_marginTop="12dp"/>
+
+        <LinearLayout
+            android:id="@+id/lvPlayer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:gravity="center"
+                android:background="@drawable/background_border"
+                android:padding="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvName_"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="الفاتحة"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="48dp"
+                    android:fontFamily="@font/khodijah_free"
+                    android:includeFontPadding="false"/>
+
+                <TextView
+                    android:id="@+id/tvName_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Al Fatihah"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="36dp"
+                    android:fontFamily="@font/khodijah_free"/>
+
+                <TextView
+                    android:id="@+id/tvDetail_"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="(Pembukaan)"
+                    android:textColor="@color/grey"
+                    android:textSize="24dp"
+                    android:fontFamily="@font/champagne_limousines_bold"/>
+
+                <TextView
+                    android:id="@+id/tvDetail_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Surat ke 1 Jumlah Ayat 7"
+                    android:textColor="@color/grey"
+                    android:textSize="12dp"
+                    android:fontFamily="@font/champagne_limousines_bold"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/lvSheet"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal"
+                android:paddingLeft="13dp"
+                android:paddingRight="13dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/next"
+                    android:padding="10dp"
+                    android:rotation="180"
+                    android:foreground="?android:attr/selectableItemBackground"/>
+
+                <ImageView
+                    android:id="@+id/btnPlay"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/play3"
+                    android:foreground="?android:attr/selectableItemBackground"/>
+
+                <ImageView
+                    android:id="@+id/btnPause"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/pause2"
+                    android:visibility="gone"
+                    android:foreground="?android:attr/selectableItemBackground"/>
+
+                <ImageView
+                    android:id="@+id/btnNext"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/next"
+                    android:padding="10dp"
+                    android:foreground="?android:attr/selectableItemBackground"/>
+            </LinearLayout>
+
+            <!--        <TextView-->
+            <!--            android:id="@+id/tvDetail_3"-->
+            <!--            android:layout_width="wrap_content"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            android:text="Surat <i>Al Faatihah</i> (Pembukaan) yang diturunkan di Mekah dan terdiri dari 7 ayat adalah surat yang pertama-tama diturunkan dengan lengkap  diantara surat-surat yang ada dalam Al Quran dan termasuk golongan surat Makkiyyah. Surat ini disebut <i>Al Faatihah</i> (Pembukaan), karena dengan surat inilah dibuka dan dimulainya Al Quran. Dinamakan <i>Ummul Quran</i> (induk Al Quran) atau <i>Ummul Kitaab</i> (induk Al Kitaab) karena dia merupakan induk dari semua isi Al Quran, dan karena itu diwajibkan membacanya pada tiap-tiap sembahyang.<br> Dinamakan pula <i>As Sab'ul matsaany</i> (tujuh yang berulang-ulang) karena ayatnya tujuh dan dibaca berulang-ulang dalam sholat."-->
+            <!--            android:textColor="@color/grey"-->
+            <!--            android:textSize="12dp"-->
+            <!--            android:fontFamily="@font/champagne_limousines_bold"-->
+            <!--            android:visibility="gone"/>-->
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

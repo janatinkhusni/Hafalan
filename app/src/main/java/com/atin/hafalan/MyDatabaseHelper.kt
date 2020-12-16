@@ -27,6 +27,7 @@ class MyDatabaseHelper(context: Context) : ManagedSQLiteOpenHelper(context, "dat
             SuratContract.ID to INTEGER + PRIMARY_KEY + AUTOINCREMENT,
             SuratContract.NO to TEXT,
             SuratContract.NAMA to TEXT,
+            SuratContract.ASMA to TEXT,
             SuratContract.AYAT to TEXT,
             SuratContract.ARTI to TEXT,
             SuratContract.PLAY to BLOB,

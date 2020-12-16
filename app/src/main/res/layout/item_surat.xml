@@ -60,5 +60,5 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="@color/grey"/>
+        android:background="@color/grey2"/>
 </LinearLayout>

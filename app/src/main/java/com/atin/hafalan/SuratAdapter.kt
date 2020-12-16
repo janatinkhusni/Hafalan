@@ -6,7 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_surat.view.*
 import okhttp3.ResponseBody
 import org.jetbrains.anko.db.classParser
@@ -37,6 +39,8 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
         val surat = list[position]
 
         view.btnLoading.visibility = View.GONE
+        view.tvName.typeface = ResourcesCompat.getFont(context, R.font.champagne_limousines_bold)
+        view.tvDetail.typeface = ResourcesCompat.getFont(context, R.font.champagne_limousines_bold)
         view.tvName.text = "${surat.no} - ${surat.nama}"
         view.tvDetail.text = "${surat.ayat} - ${surat.arti}"
 
@@ -44,6 +48,10 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
             view.btnDownload.visibility = View.GONE
             view.btnLoading.visibility = View.VISIBLE
             download(surat.no, surat.nama, view, surat)
+        }
+
+        view.checkbox.setOnCheckedChangeListener { buttonView, isChecked ->
+            updatePlay(isChecked, surat.no)
         }
 
 //        if (surat.download){
@@ -69,6 +77,7 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
                 }
 
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    Log.e("response", "" + response.code())
                     if (response.isSuccessful) {
                         Log.e("download", "server contacted and has file")
                         val writtenToDisk: Boolean = writeResponseBodyToDisk(response.body()!!, "${no} - ${nama}.mp3")
@@ -163,6 +172,17 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
         }else{//tidak ada file
             view.btnDownload.visibility = View.VISIBLE
             view.checkbox.isChecked = false
+        }
+    }
+
+    private fun updatePlay(play: Boolean, no: String) {
+        context.database.use {
+            update(SuratContract.TABLE_SURAT, SuratContract.PLAY to play)
+                .where(
+                    "${SuratContract.NO} = {${SuratContract.NO}}",
+                    SuratContract.NO to no
+                )
+                .exec()
         }
     }
 }

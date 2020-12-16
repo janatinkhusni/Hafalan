@@ -287,7 +287,7 @@ class SessionManager(val _context: Context) {
     }
 
     var suratKe: Int
-        get() = pref.getInt(KEY_SURAT_KE, 0)
+        get() = pref.getInt(KEY_SURAT_KE, -1)
         set(ke) {
             editor.putInt(KEY_SURAT_KE, ke).apply()
         }
