@@ -3,14 +3,10 @@ package com.atin.hafalan
 import android.content.Context
 import android.content.SharedPreferences
 
-class SessionManager(val _context: Context) {
+class SessionManager(_context: Context) {
     // Shared Preferences
     private val pref: SharedPreferences
     private val editor: SharedPreferences.Editor
-    private val KEY_IS_LOGGEDIN = "isLoggedIn"
-    private val KEY_NAMA = "nama"
-    private val KEY_PHONE = "phone"
-    private val KEY_VerificationId = "VerificationId"
     private val KEY_Help = "help"
     private val KEY_LONG = "longitude"
     private val KEY_LATI = "latitude"
@@ -28,32 +24,9 @@ class SessionManager(val _context: Context) {
     private val KEY_REK = "rek"
     private val KEY_NAMA_TENANT = "namaTenant"
     private val KEY_TENANT = "tenant"
-    private val KEY_CHECK_IN = "checkIn"
     private val KEY_READY = "ready"
     private val KEY_SPEAK = "speak"
     private val KEY_SURAT_KE = "suratKe"
-    val isLoggedIn: Boolean
-        get() = pref.getBoolean(KEY_IS_LOGGEDIN, false)
-
-    fun setLogin(nama: String?, phone: String?) {
-        editor.putBoolean(KEY_IS_LOGGEDIN, true).apply()
-        editor.putString(KEY_NAMA, nama).apply()
-        editor.putString(KEY_PHONE, phone).apply()
-    }
-
-    val name: String?
-        get() = pref.getString(KEY_NAMA, null)
-    val phone: String?
-        get() = pref.getString(KEY_PHONE, null)
-    var verificationId: String?
-        get() = pref.getString(KEY_VerificationId, null)
-        set(text) {
-            editor.putString(KEY_VerificationId, text).apply()
-        }
-
-    fun logout() {
-        editor.clear().apply()
-    }
 
     var isHelp: Boolean?
         get() = pref.getBoolean(KEY_Help, false)

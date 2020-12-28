@@ -3,7 +3,6 @@ package com.atin.hafalan
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnCompletionListener
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -26,6 +25,8 @@ import org.jetbrains.anko.db.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -83,11 +84,21 @@ class MainActivity : AppCompatActivity() {
         tvDetail.typeface = ResourcesCompat.getFont(this, R.font.champagne_limousines_bold)
 
         btnPlay.setOnClickListener {
-            putarSurat(false, true)
+            if (lengthMediaPlayer > 0){
+                resumeTrack()
+                loadPlayer(true)
+            }else{
+                putarSurat(false, true)
+            }
         }
 
         btnPlay_.setOnClickListener {
-            putarSurat(false, true)
+            if (lengthMediaPlayer > 0){
+                resumeTrack()
+                loadPlayer(true)
+            }else{
+                putarSurat(false, true)
+            }
         }
 
         btnNext.setOnClickListener {
@@ -143,16 +154,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updatePlay(play: Boolean) {
+    private fun uncheckPlay() {
         database.use {
-            update(SuratContract.TABLE_SURAT, SuratContract.PLAY to play)
+            update(SuratContract.TABLE_SURAT, SuratContract.PLAY to false)
                 .where(
                     "${SuratContract.PLAY} = {${SuratContract.PLAY}}",
-                    SuratContract.PLAY to !play
+                    SuratContract.PLAY to true
                 )
                 .exec()
         }
         adapter?.updateList()
+    }
+
+    fun cekPlay(){ //cek ada surat yg dipilih atau tidak
+        var listSurat = getListSurat()
+        for (q in 0 until listSurat.size){
+            if (checkFile(listSurat[q])) updatePlay(listSurat[q].no)
+        }
+        listSurat = getListSurat()
+        Log.e(
+            "cekPlay",
+            "$113 ${listSurat.size} ${listSurat[113].no} ${listSurat[113].nama} ${listSurat[112].play}"
+        )
+        adapter?.updateList()
+    }
+
+    fun checkFile(surat: SuratContract):Boolean{
+        val sd_main = File(path)
+        if (!sd_main.exists()) //cek folder
+            sd_main.mkdir() //buat folder
+        val sd = File(sd_main, "${surat.no} - ${surat.nama}.mp3")
+        return sd.exists()
+    }
+
+    private fun updatePlay(no: String) {
+        database.use {
+            update(SuratContract.TABLE_SURAT, SuratContract.PLAY to true)
+                .where(
+                    "${SuratContract.NO} = {${SuratContract.NO}}",
+                    SuratContract.NO to no
+                )
+                .exec()
+        }
     }
 
     private fun updateDownload() {
@@ -205,10 +248,10 @@ class MainActivity : AppCompatActivity() {
             updateDownload()
             return true
         } else if (id == R.id.action_check) {
-            updatePlay(true)
+            cekPlay()
             return true
         } else if (id == R.id.action_uncheck) {
-            updatePlay(false)
+            uncheckPlay()
             return true
         }
 
@@ -231,25 +274,6 @@ class MainActivity : AppCompatActivity() {
         return listData!!
     }
 
-////        for (q in sessionManager.suratKe until listSurat.size){
-//        for (q in  SessionManager(this).suratKe until listSurat.size){
-//            val surat = listSurat.get(q)
-//            if (surat.play){
-//                val nomor = String.format("%03d", surat.no)
-//                mediaPlayer = MediaPlayer.create(
-//                    this,
-//                    Uri.parse("${path}${nomor} - ${surat.nama}.mp3")
-//                );
-//                mediaPlayer.start()
-//                break
-//            }
-//        }
-//
-//        SessionManager(this).suratKe == 0
-////        sessionManager.suratKe = 0
-//        playSurat()
-//    }
-
     fun cekPilihan(): Boolean{ //cek ada surat yg dipilih atau tidak
         val listSurat = getListSurat()
         for (q in 0 until listSurat.size){
@@ -259,24 +283,15 @@ class MainActivity : AppCompatActivity() {
         }
         return false
     }
-    
-    fun listSuratPilihan(): List<SuratContract> {
-        val listSurat = getListSurat()
-        var listSuratPilihan = mutableListOf<SuratContract>()
-        for (q in 0 until listSurat.size){
-            if (listSurat[q].play){
-                listSuratPilihan.add(listSurat[q])
-            }
-        }
-        return listSuratPilihan
-    }
 
     fun nextSurat(next: Boolean): SuratContract{
         val listSurat = getListSurat()
         var suratKe = SessionManager(this).suratKe
 
+        if (suratKe == -1) suratKe = 0
+
         if (next) {
-            if (suratKe == listSurat.size-1) suratKe = 0
+            if (suratKe >= listSurat.size-1) suratKe = 0
             else suratKe++
         }
 
@@ -334,33 +349,14 @@ class MainActivity : AppCompatActivity() {
 
     fun playTrack(surat: SuratContract){
         val nomor = String.format("%03d", surat.no.toInt())
-        if (mediaPlayer == null){
-            mediaPlayer = MediaPlayer.create(
-                this,
-                Uri.parse("${path}${nomor} - ${surat.nama}.mp3")
-            )
-//        mediaPlayer.apply {
-//            setDataSource(applicationContext,
-//                // 1
-//                Uri.parse("${path}${nomor} - ${surat.nama}.mp3"))
-//        }
-            mediaPlayer.setOnCompletionListener {
-                putarSurat(true, true)
-//                if(cekPilihan()){
-//                    surat = nextSurat(true)
-//                    loadPlay(surat)
-//                }else{
-//                    toast("Tidak ada surat yang dipilih")
-//                }
-            }
-//            mp.setOnCompletionListener(OnCompletionListener { performOnEnd() })
-            mediaPlayer.start()
-        }else{
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(this, Uri.parse("${path}${nomor} - ${surat.nama}.mp3"))
-            mediaPlayer.prepare();
-            mediaPlayer.start();
+        mediaPlayer.stop();
+        mediaPlayer.reset();
+        val file = File("${path}${nomor} - ${surat.nama}.mp3")
+        mediaPlayer.setDataSource(this, Uri.fromFile(file))
+        mediaPlayer.prepare();
+        mediaPlayer.start();
+        mediaPlayer.setOnCompletionListener {
+            putarSurat(true, true)
         }
     }
 
@@ -372,20 +368,16 @@ class MainActivity : AppCompatActivity() {
     fun putarSurat(next: Boolean, typeNext: Boolean){//next = putar surat sekarang atau pindah surat
         // typeNext : NextTrack atau backtrack
         if(cekPilihan()){
-            if (lengthMediaPlayer>0){
-                resumeTrack()
+            var surat : SuratContract? = null
+            if (typeNext){
+                surat = nextSurat(next)
             }else{
-                val surat : SuratContract? = null
-                if (typeNext){
-                    nextSurat(next)
-                }else{
-                    backSurat()
-                }
-                loadPlay(surat!!)
-                lvPlayer.visibility = View.VISIBLE
-                playTrack(surat)
-                loadPlayer(true)
+                surat = backSurat()
             }
+            loadPlay(surat)
+            lvPlayer.visibility = View.VISIBLE
+            playTrack(surat)
+            loadPlayer(true)
         }else{
             toast("Tidak ada surat yang dipilih")
         }

@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_surat.view.*
 import okhttp3.ResponseBody
 import org.jetbrains.anko.db.classParser
@@ -53,14 +52,6 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
         view.checkbox.setOnCheckedChangeListener { buttonView, isChecked ->
             updatePlay(isChecked, surat.no)
         }
-
-//        if (surat.download){
-//            if (!sd.exists()){
-//                view.btnDownload.visibility = View.GONE
-//                view.btnLoading.visibility = View.VISIBLE
-//                download(surat.no, surat.nama)
-//            }
-//        }
 
         loadStatus(view, surat)
     }
@@ -163,7 +154,7 @@ class SuratAdapter(val context: Context) : RecyclerView.Adapter<SuratAdapter.Hol
         val sd = File(sd_main,"${surat.no} - ${surat.nama}.mp3")
 
         view.checkbox.isEnabled = sd.exists()
-        Log.e("cek_file", ""+sd.exists())
+        Log.e("cek_file", "${surat.no} ${surat.nama} ${surat.play}")
 
         if (sd.exists()) { //jika file ada
             view.btnDownload.visibility = View.GONE

@@ -1,6 +1,5 @@
 package com.atin.hafalan
 
-import com.atin.hafalan.response.Surat
 import com.atin.hafalan.response.Surats
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
