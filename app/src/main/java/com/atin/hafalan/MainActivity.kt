@@ -1,11 +1,18 @@
 package com.atin.hafalan
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.net.Uri
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
+import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -13,6 +20,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,15 +35,20 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.util.*
 
-
-class MainActivity : AppCompatActivity() {
+class MainActivity() : AppCompatActivity(), Parcelable {
 
     var adapter: SuratAdapter? = null
     private val RECORD_REQUEST_CODE = 101
     private lateinit var mediaPlayer: MediaPlayer
     val path = "${Environment.getExternalStorageDirectory()}/Hafalan/"
     var lengthMediaPlayer = 0
+    var isPlaying = false
+    val CHANNEL_ID = "channel1"
+    val ACTION_PREVIUOS = "actionprevious"
+    val ACTION_PLAY = "actionplay"
+    val ACTION_NEXT = "actionnext"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,44 +83,30 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnPause_.setOnClickListener {
-            lengthMediaPlayer = mediaPlayer.currentPosition
-            mediaPlayer.pause()
-            loadPlayer(false)
+            onTrackPause()
         }
 
         btnPause.setOnClickListener {
-            lengthMediaPlayer = mediaPlayer.currentPosition
-            mediaPlayer.pause()
-            loadPlayer(false)
+            onTrackPause()
         }
 
         tvName.typeface = ResourcesCompat.getFont(this, R.font.champagne_limousines_bold)
         tvDetail.typeface = ResourcesCompat.getFont(this, R.font.champagne_limousines_bold)
 
         btnPlay.setOnClickListener {
-            if (lengthMediaPlayer > 0){
-                resumeTrack()
-                loadPlayer(true)
-            }else{
-                putarSurat(false, true)
-            }
+            onTrackPlay()
         }
 
         btnPlay_.setOnClickListener {
-            if (lengthMediaPlayer > 0){
-                resumeTrack()
-                loadPlayer(true)
-            }else{
-                putarSurat(false, true)
-            }
+            onTrackPlay()
         }
 
         btnNext.setOnClickListener {
-            putarSurat(true, true)
+            onTrackNext()
         }
 
         btnBack.setOnClickListener {
-            putarSurat(true, false)
+            onTrackPrevious()
         }
 
         val suratKe = SessionManager(this).suratKe
@@ -116,6 +116,8 @@ class MainActivity : AppCompatActivity() {
         }else{
             lvPlayer.visibility = View.GONE
         }
+
+        registerReceiver(broadcastReceiver, IntentFilter("TRACKS_TRACKS"))
     }
 
     private fun dropTableSurat(){
@@ -333,17 +335,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadPlayer(status: Boolean){
+        val surat = getListSurat().get(SessionManager(this).suratKe)
         if (status){
             lengthMediaPlayer = 0
             btnPlay_.visibility = View.GONE
             btnPlay.visibility = View.GONE
             btnPause_.visibility = View.VISIBLE
             btnPause.visibility = View.VISIBLE
+            createNotificationChannel()
+            createNotification("PAUSE",R.drawable.ic_pause_black_24dp, surat)
         }else{
             btnPlay_.visibility = View.VISIBLE
             btnPlay.visibility = View.VISIBLE
             btnPause_.visibility = View.GONE
             btnPause.visibility = View.GONE
+            createNotificationChannel()
+            createNotification("PLAY",R.drawable.ic_play_arrow_black_24dp, surat)
         }
     }
 
@@ -356,7 +363,7 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer.prepare();
         mediaPlayer.start();
         mediaPlayer.setOnCompletionListener {
-            putarSurat(true, true)
+            onTrackNext()
         }
     }
 
@@ -366,9 +373,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun putarSurat(next: Boolean, typeNext: Boolean){//next = putar surat sekarang atau pindah surat
-        // typeNext : NextTrack atau backtrack
         if(cekPilihan()){
-            var surat : SuratContract? = null
+            val surat : SuratContract
             if (typeNext){
                 surat = nextSurat(next)
             }else{
@@ -380,6 +386,129 @@ class MainActivity : AppCompatActivity() {
             loadPlayer(true)
         }else{
             toast("Tidak ada surat yang dipilih")
+        }
+    }
+
+    var broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent == null) Log.i("permission", "Permission ")
+            if (intent != null) Log.i("permission", "Permission ")
+            val action = intent.extras!!.getString("actionname")
+            toast("action $action")
+            when (action) {
+                ACTION_PREVIUOS -> onTrackPrevious()
+                ACTION_PLAY -> if (mediaPlayer.isPlaying) {
+                    onTrackPause()
+                } else {
+                    onTrackPlay()
+                }
+                ACTION_NEXT -> onTrackNext()
+            }
+        }
+    }
+
+    constructor(parcel: Parcel) : this() {
+        lengthMediaPlayer = parcel.readInt()
+        isPlaying = parcel.readByte() != 0.toByte()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(broadcastReceiver)
+    }
+
+    fun onTrackPrevious() {
+        putarSurat(true, false)
+    }
+
+    fun onTrackPlay() {
+        if (lengthMediaPlayer > 0){
+            resumeTrack()
+            loadPlayer(true)
+        }else{
+            putarSurat(false, true)
+        }
+    }
+
+    fun onTrackPause() {
+        lengthMediaPlayer = mediaPlayer.currentPosition
+        mediaPlayer.pause()
+        loadPlayer(false)
+    }
+
+    fun onTrackNext() {
+        putarSurat(true, true)
+    }
+
+    fun createNotification(nameButton: String, playbutton: Int, surat: SuratContract){
+        val drw_previous = R.drawable.ic_skip_previous_black_24dp
+        val drw_next = R.drawable.ic_skip_next_black_24dp
+
+        val intentPrevious = Intent(this, MyBroadcastReceiver::class.java).setAction(ACTION_PREVIUOS)
+        val pendingIntentPrevious = PendingIntent.getBroadcast(this, 0, intentPrevious, 0)
+        val intentPlay = Intent(this, MyBroadcastReceiver::class.java).setAction(ACTION_PLAY)
+        val pendingIntentPlay = PendingIntent.getBroadcast(this, 0, intentPlay, 0)
+        val intentNext = Intent(this, MyBroadcastReceiver::class.java).setAction(ACTION_NEXT)
+        val pendingIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, 0)
+
+        val channelId = "My_Channel_ID"
+        val pendingIntent = PendingIntent.getActivity(this,0,intent,0)
+        val mediaSessionCompat = MediaSessionCompat(this, "tag")
+
+        val notificationBuilder = NotificationCompat.Builder(this,channelId)
+            .setSmallIcon(R.drawable.ic_pause_black_24dp)
+            .setContentTitle("${surat.no} - ${surat.nama}")
+            .setContentText("${surat.ayat} - ${surat.arti}")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .addAction(drw_previous, "Previous", pendingIntentPrevious)
+            .addAction(playbutton, nameButton, pendingIntentPlay)
+            .addAction(drw_next, "Next", pendingIntentNext)
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+                    .setMediaSession(mediaSessionCompat.sessionToken)
+            )
+        with(NotificationManagerCompat.from(this)){
+            notify(1, notificationBuilder.build())
+        }
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(lengthMediaPlayer)
+        parcel.writeByte(if (isPlaying) 1 else 0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<MainActivity> {
+        override fun createFromParcel(parcel: Parcel): MainActivity {
+            return MainActivity(parcel)
+        }
+
+        override fun newArray(size: Int): Array<MainActivity?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ (Android 8.0) because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val name = "My Channel"
+            val channelDescription = "Channel Description"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+            val channel = NotificationChannel("My_Channel_ID",name,importance)
+            channel.apply {
+                description = channelDescription
+            }
+
+            // Finally register the channel with system
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }
